@@ -1,8 +1,10 @@
 package com.example.aura
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.inputmethod.EditorInfo
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     // creating variables on below line.
     lateinit var responseTV: TextView
     lateinit var questionTV: TextView
+   lateinit  var btn:Button
     private var context: String =""
     lateinit var queryEdt: TextInputEditText
     val db = Firebase.firestore
@@ -36,7 +39,12 @@ class MainActivity : AppCompatActivity() {
         responseTV = findViewById(R.id.idTVResponse)
         questionTV = findViewById(R.id.idTVQuestion)
         queryEdt = findViewById(R.id.idEdtQuery)
+        btn= findViewById(R.id.button)
 
+        btn.setOnClickListener {
+            val intent = Intent(this,MainActivity2::class.java)
+            startActivity(intent)
+        }
         // adding editor action listener for edit text on below line.
         queryEdt.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
@@ -57,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun getResponse(query:String,context:String) {
 
-        val promptText1 = "$query. Previous Chat for context:$context"
+        val promptText1 = "$query. Role:You are a female emotional,mental supporter and motivator assistant. Previous Chat for context:$context"
         val promptText = promptText1.replace("\\s+".toRegex(), " ")
         // setting text on for question on below line.
         questionTV.text = query
@@ -71,10 +79,11 @@ class MainActivity : AppCompatActivity() {
             jsonObject?.put("model", "text-davinci-003")
             jsonObject?.put("prompt", promptText)
             jsonObject?.put("temperature", 0)
-            jsonObject?.put("max_tokens", 150)
+            jsonObject?.put("max_tokens", 50)
             jsonObject?.put("top_p", 1)
             jsonObject?.put("frequency_penalty", 0.0)
             jsonObject?.put("presence_penalty", 0.0)
+
 
         // on below line making json object request.
         val postRequest: JsonObjectRequest =
@@ -131,16 +140,17 @@ class MainActivity : AppCompatActivity() {
                     Log.d("db", "DocumentSnapshot data: ${document.data}")
                     var p1 = document.get("1").toString()
                     var p2 = document.get("2").toString()
-                    var p3 = document.get("3").toString()
-                    var p4 = document.get("4").toString()
-                    var p5 = document.get("5").toString()
+//                    var p3 = document.get("3").toString()
+//                    var p4 = document.get("4").toString()
+//                    var p5 = document.get("5").toString()
                     if (p1=="null"){ p1="" }
                     if (p2=="null"){ p2="" }
-                    if (p3=="null"){ p3="" }
-                    if (p4=="null"){ p4="" }
-                    if (p5=="null"){ p5="" }
-                    context = "$p1\n$p2\n$p3\n$p4\n$p5"
-                    if(p1=="null"&&p2=="null"&&p3=="null"&&p4=="null"&&p5=="null"){
+//                    if (p3=="null"){ p3="" }
+//                    if (p4=="null"){ p4="" }
+//                    if (p5=="null"){ p5="" }
+//                context = "$p1\n$p2\n$p3\n$p4\n$p5"
+                    context = "$p1\n$p2"
+                    if(p1=="null"&&p2=="null"){
                         val promptText=query
                     }else {
                         val promptText = "$query (Previous conversation:$context)"
@@ -178,7 +188,7 @@ class MainActivity : AppCompatActivity() {
             }
     }
     private fun increment(num:Int){
-        if (num<5){
+        if (num<2){
             val iNum = num+1
             val pNum = hashMapOf("Num" to iNum)
             pInfoLocation.set(pNum)
@@ -187,5 +197,8 @@ class MainActivity : AppCompatActivity() {
             pInfoLocation.set(pNum)
 
         }
+    }
+    private fun chatCompletion(p1:String){
+
     }
 }
