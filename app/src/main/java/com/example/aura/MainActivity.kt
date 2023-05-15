@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,33 +28,27 @@ import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
     // creating variables on below line.
-    private lateinit var responseTV: TextView
-    private lateinit var questionTV: TextView
-   private lateinit  var btn:Button
+
+    private lateinit var btn: Button
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ChatAdapter
-    private lateinit var btn2:Button
-   private lateinit var currentNumber:String
+    private lateinit var currentNumber: String
     private lateinit var queryEdt: TextInputEditText
     private val tag = "OngoingProcesses"
     val message = mutableListOf<String>()
     private val db = Firebase.firestore
-   private val sidLocation= db.collection("UserId").document("SID")
-    private val pInfoLocation=db.collection("UserId").document("PInfo")
+    private val sidLocation = db.collection("UserId").document("SID")
+    private val pInfoLocation = db.collection("UserId").document("PInfo")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         // initializing variables on below line.
-        responseTV = findViewById(R.id.idTVResponse)
-        questionTV = findViewById(R.id.idTVQuestion)
         queryEdt = findViewById(R.id.idEdtQuery)
-        btn= findViewById(R.id.button)
+        btn = findViewById(R.id.button)
         getNum()
-        btn.visibility=View.INVISIBLE
-        btn2.setOnClickListener {
-            startActivity(Intent(this,MainActivity2::class.java))
-        }
+
+        btn.visibility = View.INVISIBLE
         btn.setOnClickListener {
             val optionQury = "Continue the above response."
             promptcreator(optionQury)
@@ -62,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         queryEdt.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
                 // setting response tv on below line.
-                responseTV.text = getString(R.string.please_wait)
+
                 Log.e(tag, "Send Button clicked")
                 // validating text
                 if (queryEdt.text.toString().isNotEmpty()) {
@@ -77,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun promptcreator (query:String){
+    private fun promptcreator(query: String) {
         Log.e(tag, "Entered prompt creator")
         sidLocation.get()
             .addOnSuccessListener { document ->
@@ -89,12 +84,24 @@ class MainActivity : AppCompatActivity() {
                     var a1 = document.get("4").toString()
                     var a2 = document.get("5").toString()
                     var a3 = document.get("6").toString()
-                    if (p1=="null"){ p1="" }
-                    if (p2=="null"){ p2="" }
-                    if (p3=="null"){ p3="" }
-                    if (a1=="null"){ a1="" }
-                    if (a2=="null"){ a2="" }
-                    if (a3=="null"){ a3="" }
+                    if (p1 == "null") {
+                        p1 = ""
+                    }
+                    if (p2 == "null") {
+                        p2 = ""
+                    }
+                    if (p3 == "null") {
+                        p3 = ""
+                    }
+                    if (a1 == "null") {
+                        a1 = ""
+                    }
+                    if (a2 == "null") {
+                        a2 = ""
+                    }
+                    if (a3 == "null") {
+                        a3 = ""
+                    }
 
                     val ap1 = optimizeStringForJson(p1)
                     val ap2 = optimizeStringForJson(p2)
@@ -102,15 +109,20 @@ class MainActivity : AppCompatActivity() {
                     val aa1 = optimizeStringForJson(a1)
                     val aa2 = optimizeStringForJson(a2)
                     val aa3 = optimizeStringForJson(a3)
+                    message.add(query)
+                    adapter.notifyDataSetChanged()
+                    recyclerView.postDelayed({
+                        recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
+                    }, 100)
                     Log.e(tag, "p1:$p1 ,p2:$p2 ,p3:$p3 , a1:$a1 ,a2:$a2 ,a3:$a3 ")
-                    if (currentNumber=="1"){
-                        chatCompletion(query,ap1,ap2,ap3,aa1,aa2,aa3)
+                    if (currentNumber == "1") {
+                        chatCompletion(query, ap1, ap2, ap3, aa1, aa2, aa3)
 
-                    }else if (currentNumber=="2"){
-                        chatCompletion(query,ap3,ap2,ap1,aa3,aa2,aa1)
+                    } else if (currentNumber == "2") {
+                        chatCompletion(query, ap3, ap2, ap1, aa3, aa2, aa1)
 
-                    }else if (currentNumber=="3"){
-                        chatCompletion(query,ap3,ap1,ap2,aa3,aa1,aa2)
+                    } else if (currentNumber == "3") {
+                        chatCompletion(query, ap3, ap1, ap2, aa3, aa1, aa2)
 
                     }
 
@@ -130,60 +142,73 @@ class MainActivity : AppCompatActivity() {
                 Log.d("db", "get failed with ", exception)
             }
     }
-    private fun getNum(){
+
+    private fun getNum() {
         Log.e(tag, "Entered get Num")
         pInfoLocation.get()
-            .addOnSuccessListener{document ->
-                if(document!=null){
-                    val num =document.get("Num")
-                    if (num!=null){
-                       currentNumber=num.toString()
-                        if (currentNumber=="null"){
-                            currentNumber="1"
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    val num = document.get("Num")
+                    if (num != null) {
+                        currentNumber = num.toString()
+
+                        if (currentNumber == "null") {
+                            currentNumber = "1"
                         }
+                        historyDownload()
                     }
                     Log.e(tag, "NUm is:$currentNumber")
                 }
             }
     }
-    private fun promptUpload(prompt:String,ans:String){
+
+    private fun promptUpload(prompt: String, ans: String) {
         Log.e(tag, "Entered prompt upload")
         val num = currentNumber
         val uData = hashMapOf(num to prompt)
         sidLocation.set(uData, SetOptions.merge())
             .addOnSuccessListener {
                 val num1 = num.toInt()
-                val num2 = num1+3
+                val num2 = num1 + 3
                 val aData = hashMapOf(num2.toString() to ans)
                 sidLocation.set(aData, SetOptions.merge()).addOnSuccessListener {
                     increment(num.toInt())
                     Log.e(tag, "upload successful")
                 }
-                    .addOnFailureListener{
+                    .addOnFailureListener {
 
-                }
+                    }
 
             }
-            .addOnFailureListener{
+            .addOnFailureListener {
 
             }
     }
-    private fun increment(num:Int){
+
+    private fun increment(num: Int) {
         Log.e(tag, "Entered Number Increment")
-        if (num<3){
-            val iNum = num+1
+        if (num < 3) {
+            val iNum = num + 1
             val pNum = hashMapOf("Num" to iNum)
             pInfoLocation.set(pNum)
             currentNumber = iNum.toString()
-        }else{
+        } else {
             val pNum = hashMapOf("Num" to 1)
             pInfoLocation.set(pNum)
-            currentNumber="1"
+            currentNumber = "1"
         }
     }
-    private fun chatCompletion(currentP:String,p1:String,p2:String,p3:String,a1:String,a2:String,a3:String){
+
+    private fun chatCompletion(
+        currentP: String,
+        p1: String,
+        p2: String,
+        p3: String,
+        a1: String,
+        a2: String,
+        a3: String
+    ) {
         Log.e(tag, "Entered chat completion, Current prompt:$currentP")
-        questionTV.text = currentP
         queryEdt.setText("")
         GlobalScope.launch(Dispatchers.IO) {
             val client = OkHttpClient()
@@ -227,13 +252,22 @@ class MainActivity : AppCompatActivity() {
                     val jsonObject = JSONObject(responseString)
                     val usageObject = jsonObject.getJSONObject("usage")
                     val completionTokens = usageObject.getInt("completion_tokens")
-                    val promptTokens =  usageObject.getInt("prompt_tokens")
+                    val promptTokens = usageObject.getInt("prompt_tokens")
                     val tokens = completionTokens
-                     Toast.makeText(this@MainActivity,"Response Tokens:$tokens , Prompt Token:$promptTokens",Toast.LENGTH_LONG).show()
-                    responseTV.text=content
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Response Tokens:$tokens , Prompt Token:$promptTokens",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    message.add(content)
+                    adapter.notifyDataSetChanged()
+                    recyclerView.postDelayed({
+                        recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
+                    }, 100)
                     tokenCal(tokens)
                     Log.e(tag, "Got response:$content")
-                    promptUpload(currentP,content)
+                    promptUpload(currentP, content)
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -241,11 +275,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun tokenCal(token:Int){
-        if (token==150){
-            btn.visibility=View.VISIBLE
+    private fun tokenCal(token: Int) {
+        if (token == 150) {
+            btn.visibility = View.VISIBLE
         }
     }
+
     fun optimizeStringForJson(input: String): String {
         val escapedInput = input
             .replace("\\", "\\\\")  // Escape backslashes
@@ -265,7 +300,8 @@ class MainActivity : AppCompatActivity() {
 
         return unicodeEscapedInput.toString()
     }
-    fun recyclerViewAdd(p1: String, a1: String, p2: String, a2: String, p3: String, a3: String) {
+
+    fun recyclerViewAdd() {
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -273,17 +309,14 @@ class MainActivity : AppCompatActivity() {
         adapter = ChatAdapter()
         recyclerView.adapter = adapter
 
-        // Add sample messages to the adapter
-        message.add(p1)
-        message.add(a2)
-        message.add(p2)
-        message.add(a2)
-        message.add(a3)
-        message.add(a3)
-
+        // Add sample messages to the adapte
         adapter.submitList(message)
+        recyclerView.postDelayed({
+            recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
+        }, 100)
     }
-    fun historyDownload(){
+
+    fun historyDownload() {
         sidLocation.get()
             .addOnSuccessListener { document ->
                 if (document != null) {
@@ -294,28 +327,50 @@ class MainActivity : AppCompatActivity() {
                     var a1 = document.get("4").toString()
                     var a2 = document.get("5").toString()
                     var a3 = document.get("6").toString()
-                    if (p1=="null"){ p1="" }
-                    if (p2=="null"){ p2="" }
-                    if (p3=="null"){ p3="" }
-                    if (a1=="null"){ a1="" }
-                    if (a2=="null"){ a2="" }
-                    if (a3=="null"){ a3="" }
-                    if (currentNumber=="1"){
-                        chatCompletion(query,ap1,ap2,ap3,aa1,aa2,aa3)
-                        message.add(p1)
-                        message.add(p1)
-                        message.add(p1)
-                        message.add(p1)
-                        message.add(p1)
-                        message.add(p1)
-                    }else if (currentNumber=="2"){
-                        chatCompletion(query,ap3,ap2,ap1,aa3,aa2,aa1)
-                        recyclerViewAdd(p3,a3,p2,a2,p1,a1)
-                    }else if (currentNumber=="3"){
-                        chatCompletion(query,ap3,ap1,ap2,aa3,aa1,aa2)
-                        recyclerViewAdd(p3,a3,p1,a1,p2,a2)
+                    if (p1 == "null") {
+                        p1 = ""
                     }
+                    if (p2 == "null") {
+                        p2 = ""
+                    }
+                    if (p3 == "null") {
+                        p3 = ""
+                    }
+                    if (a1 == "null") {
+                        a1 = ""
+                    }
+                    if (a2 == "null") {
+                        a2 = ""
+                    }
+                    if (a3 == "null") {
+                        a3 = ""
+                    }
+                    if (currentNumber == "1") {
+                        message.add(p1)
+                        message.add(a1)
+                        message.add(p2)
+                        message.add(a2)
+                        message.add(p3)
+                        message.add(a3)
+                    } else if (currentNumber == "2") {
+                        message.add(p3)
+                        message.add(a3)
+                        message.add(p2)
+                        message.add(a2)
+                        message.add(p1)
+                        message.add(a1)
+                    } else if (currentNumber == "3") {
+                        message.add(p3)
+                        message.add(a3)
+                        message.add(p1)
+                        message.add(a1)
+                        message.add(p2)
+                        message.add(a2)
+                    }
+                    recyclerViewAdd()
+                }
+
+
+            }
     }
-
-
 }

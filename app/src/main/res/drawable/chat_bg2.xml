@@ -1,0 +1,9 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#FF4081" /> <!-- Replace with your desired color -->
+    <corners android:radius="16dp" /> <!-- Adjust the radius to control the roundness of corners -->
+    <gradient
+        android:angle="45"
+        android:startColor="#00A629"
+        android:endColor="#41E3F8"
+        android:type="linear" />
+</shape>
