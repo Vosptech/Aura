@@ -3,6 +3,8 @@ package com.example.aura
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -15,49 +17,23 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
 class MainActivity2 : AppCompatActivity() {
-    lateinit var tv :TextView
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: ChatAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
 
 
-        tv=findViewById(R.id.textView1)
-        GlobalScope.launch(Dispatchers.IO) {
-            val client = OkHttpClient()
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-            val MEDIA_TYPE = "application/json".toMediaType()
+        // Create and set the adapter for the RecyclerView
+        adapter = ChatAdapter()
+        recyclerView.adapter = adapter
 
-            val requestBody = """
-                {
-                    "model": "gpt-3.5-turbo",
-                    "messages": [{"role": "user", "content": "Hello!"}]
-                }
-            """.trimIndent()
-
-            val OPENAI_API_KEY = "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"
-            val request = Request.Builder()
-                .url("https://api.openai.com/v1/chat/completions")
-                .post(requestBody.toRequestBody(MEDIA_TYPE))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer $OPENAI_API_KEY")
-                .build()
-
-            try {
-                val response = client.newCall(request).execute()
-                val responseString = response.body?.string()
-
-                runOnUiThread {
-                    val responseObj = JSONObject(responseString)
-                    val choicesArray = responseObj.getJSONArray("choices")
-                    val messageObj = choicesArray.getJSONObject(0).getJSONObject("message")
-                    val content = messageObj.getString("content")
-
-                    tv.text = content
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
+        // Add sample messages to the adapter
+        val messages = listOf("Hello", "How are you?", "I'm good, thanks!")
+        adapter.submitList(messages)
     }
 }
-// Do something with the responseString

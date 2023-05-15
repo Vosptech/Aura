@@ -44,12 +44,18 @@
                 android:text="Response"
                 android:textColor="@color/white"
                 android:textSize="15sp" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
             <Button
                 android:id="@+id/button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Continue the above response " />
+                android:text="@string/continue_the_above_response" />
+
+
         </LinearLayout>
 
     </ScrollView>
@@ -70,8 +76,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/edt_back_color"
-            android:drawableEnd="@drawable/baseline_send_24"
-            android:drawableTint="@color/white"
             android:ems="10"
             android:imeOptions="actionSend"
             android:importantForAutofill="no"

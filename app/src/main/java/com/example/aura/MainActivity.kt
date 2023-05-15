@@ -9,12 +9,8 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.android.volley.RequestQueue
-import com.android.volley.Response
-import com.android.volley.RetryPolicy
-import com.android.volley.VolleyError
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
@@ -31,18 +27,20 @@ import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
     // creating variables on below line.
-    lateinit var responseTV: TextView
-    lateinit var questionTV: TextView
-   lateinit  var btn:Button
-   lateinit var currentNumber:String
-    private var context: String =""
-    lateinit var queryEdt: TextInputEditText
-    val tag = "OngoingProcesses"
-    val db = Firebase.firestore
-   val sidLocation= db.collection("UserId").document("SID")
-    val pInfoLocation=db.collection("UserId").document("PInfo")
+    private lateinit var responseTV: TextView
+    private lateinit var questionTV: TextView
+   private lateinit  var btn:Button
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: ChatAdapter
+    private lateinit var btn2:Button
+   private lateinit var currentNumber:String
+    private lateinit var queryEdt: TextInputEditText
+    private val tag = "OngoingProcesses"
+    val message = mutableListOf<String>()
+    private val db = Firebase.firestore
+   private val sidLocation= db.collection("UserId").document("SID")
+    private val pInfoLocation=db.collection("UserId").document("PInfo")
 
-    var url = "https://api.openai.com/v1/completions"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -53,18 +51,21 @@ class MainActivity : AppCompatActivity() {
         btn= findViewById(R.id.button)
         getNum()
         btn.visibility=View.INVISIBLE
+        btn2.setOnClickListener {
+            startActivity(Intent(this,MainActivity2::class.java))
+        }
         btn.setOnClickListener {
             val optionQury = "Continue the above response."
             promptcreator(optionQury)
         }
         // adding editor action listener for edit text on below line.
-        queryEdt.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, event ->
+        queryEdt.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
                 // setting response tv on below line.
-                responseTV.text = "Please wait.."
+                responseTV.text = getString(R.string.please_wait)
                 Log.e(tag, "Send Button clicked")
                 // validating text
-                if (queryEdt.text.toString().length > 0) {
+                if (queryEdt.text.toString().isNotEmpty()) {
                     // calling get response to get the response.
                     promptcreator(queryEdt.text.toString())
                 } else {
@@ -94,13 +95,23 @@ class MainActivity : AppCompatActivity() {
                     if (a1=="null"){ a1="" }
                     if (a2=="null"){ a2="" }
                     if (a3=="null"){ a3="" }
+
+                    val ap1 = optimizeStringForJson(p1)
+                    val ap2 = optimizeStringForJson(p2)
+                    val ap3 = optimizeStringForJson(p3)
+                    val aa1 = optimizeStringForJson(a1)
+                    val aa2 = optimizeStringForJson(a2)
+                    val aa3 = optimizeStringForJson(a3)
                     Log.e(tag, "p1:$p1 ,p2:$p2 ,p3:$p3 , a1:$a1 ,a2:$a2 ,a3:$a3 ")
                     if (currentNumber=="1"){
-                        chatCompletion(query,p1,p2,p3,a1,a2,a3)
+                        chatCompletion(query,ap1,ap2,ap3,aa1,aa2,aa3)
+
                     }else if (currentNumber=="2"){
-                        chatCompletion(query,p3,p2,p1,a3,a2,a1)
+                        chatCompletion(query,ap3,ap2,ap1,aa3,aa2,aa1)
+
                     }else if (currentNumber=="3"){
-                        chatCompletion(query,p3,p1,p2,a3,a1,a2)
+                        chatCompletion(query,ap3,ap1,ap2,aa3,aa1,aa2)
+
                     }
 
 //                context = "$p1\n$p2\n$p3\n$p4\n$p5"
@@ -190,10 +201,10 @@ class MainActivity : AppCompatActivity() {
          {"role": "user", "content": "$p3"},
         {"role": "assistant", "content": "$a3"},
         {"role": "user", "content": "$currentP"}],
-        "max_tokens": 50
+        "max_tokens": 150
                 }
             """.trimIndent()
-
+            Log.d("prompts", requestBody)
             val OPENAI_API_KEY = "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"
             val request = Request.Builder()
                 .url("https://api.openai.com/v1/chat/completions")
@@ -204,18 +215,21 @@ class MainActivity : AppCompatActivity() {
 
             try {
                 val response = client.newCall(request).execute()
-                val responseString = response.body?.string()
+                val responseString = response.body!!.string()
 
                 runOnUiThread {
+
                     val responseObj = JSONObject(responseString)
+                    Log.d("Response", responseString)
                     val choicesArray = responseObj.getJSONArray("choices")
                     val messageObj = choicesArray.getJSONObject(0).getJSONObject("message")
                     val content = messageObj.getString("content")
                     val jsonObject = JSONObject(responseString)
                     val usageObject = jsonObject.getJSONObject("usage")
                     val completionTokens = usageObject.getInt("completion_tokens")
-                    val tokens = completionTokens.toInt()
-                     Toast.makeText(this@MainActivity,"Tokens:$tokens",Toast.LENGTH_LONG).show()
+                    val promptTokens =  usageObject.getInt("prompt_tokens")
+                    val tokens = completionTokens
+                     Toast.makeText(this@MainActivity,"Response Tokens:$tokens , Prompt Token:$promptTokens",Toast.LENGTH_LONG).show()
                     responseTV.text=content
                     tokenCal(tokens)
                     Log.e(tag, "Got response:$content")
@@ -226,9 +240,82 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    fun tokenCal(token:Int){
-        if (token==50){
+
+    private fun tokenCal(token:Int){
+        if (token==150){
             btn.visibility=View.VISIBLE
         }
     }
+    fun optimizeStringForJson(input: String): String {
+        val escapedInput = input
+            .replace("\\", "\\\\")  // Escape backslashes
+            .replace("\"", "\\\"")  // Escape double quotes
+            .replace("\n", "\\n")  // Escape newlines
+            .replace("\r", "\\r")  // Escape carriage returns
+            .replace("\t", "\\t")  // Escape tabs
+            .replace("\\s+".toRegex(), " ")
+        val unicodeEscapedInput = StringBuilder()
+        for (c in escapedInput) {
+            if (c.toInt() < 128) {
+                unicodeEscapedInput.append(c)
+            } else {
+                unicodeEscapedInput.append("\\u").append(String.format("%04X", c.toInt()))
+            }
+        }
+
+        return unicodeEscapedInput.toString()
+    }
+    fun recyclerViewAdd(p1: String, a1: String, p2: String, a2: String, p3: String, a3: String) {
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        // Create and set the adapter for the RecyclerView
+        adapter = ChatAdapter()
+        recyclerView.adapter = adapter
+
+        // Add sample messages to the adapter
+        message.add(p1)
+        message.add(a2)
+        message.add(p2)
+        message.add(a2)
+        message.add(a3)
+        message.add(a3)
+
+        adapter.submitList(message)
+    }
+    fun historyDownload(){
+        sidLocation.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    Log.d("db", "DocumentSnapshot data: ${document.data}")
+                    var p1 = document.get("1").toString()
+                    var p2 = document.get("2").toString()
+                    var p3 = document.get("3").toString()
+                    var a1 = document.get("4").toString()
+                    var a2 = document.get("5").toString()
+                    var a3 = document.get("6").toString()
+                    if (p1=="null"){ p1="" }
+                    if (p2=="null"){ p2="" }
+                    if (p3=="null"){ p3="" }
+                    if (a1=="null"){ a1="" }
+                    if (a2=="null"){ a2="" }
+                    if (a3=="null"){ a3="" }
+                    if (currentNumber=="1"){
+                        chatCompletion(query,ap1,ap2,ap3,aa1,aa2,aa3)
+                        message.add(p1)
+                        message.add(p1)
+                        message.add(p1)
+                        message.add(p1)
+                        message.add(p1)
+                        message.add(p1)
+                    }else if (currentNumber=="2"){
+                        chatCompletion(query,ap3,ap2,ap1,aa3,aa2,aa1)
+                        recyclerViewAdd(p3,a3,p2,a2,p1,a1)
+                    }else if (currentNumber=="3"){
+                        chatCompletion(query,ap3,ap1,ap2,aa3,aa1,aa2)
+                        recyclerViewAdd(p3,a3,p1,a1,p2,a2)
+                    }
+    }
+
+
 }
