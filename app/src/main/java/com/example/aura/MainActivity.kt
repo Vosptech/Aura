@@ -111,9 +111,7 @@ class MainActivity : AppCompatActivity() {
                     val aa3 = optimizeStringForJson(a3)
                     message.add(query)
                     adapter.notifyDataSetChanged()
-                    recyclerView.postDelayed({
-                        recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
-                    }, 100)
+
                     Log.e(tag, "p1:$p1 ,p2:$p2 ,p3:$p3 , a1:$a1 ,a2:$a2 ,a3:$a3 ")
                     if (currentNumber == "1") {
                         chatCompletion(query, ap1, ap2, ap3, aa1, aa2, aa3)
@@ -262,9 +260,7 @@ class MainActivity : AppCompatActivity() {
 
                     message.add(content)
                     adapter.notifyDataSetChanged()
-                    recyclerView.postDelayed({
-                        recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
-                    }, 100)
+
                     tokenCal(tokens)
                     Log.e(tag, "Got response:$content")
                     promptUpload(currentP, content)
@@ -311,9 +307,7 @@ class MainActivity : AppCompatActivity() {
 
         // Add sample messages to the adapte
         adapter.submitList(message)
-        recyclerView.postDelayed({
-            recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
-        }, 100)
+
     }
 
     fun historyDownload() {

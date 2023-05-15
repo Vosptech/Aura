@@ -40,6 +40,7 @@ class ChatAdapter : ListAdapter<String, ChatAdapter.MessageViewHolder>(MessageDi
                 state=1
                 updateLayoutGravity(Gravity.START)
                 updateMargin(5,10,140,5)
+                messageTextView.setBackgroundResource(R.drawable.chat_message_background)
             }
             messageTextView.text = message
         }
