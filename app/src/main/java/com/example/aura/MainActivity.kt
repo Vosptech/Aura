@@ -3,6 +3,7 @@ package com.example.aura
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.TextView
@@ -18,15 +19,25 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
     // creating variables on below line.
     lateinit var responseTV: TextView
     lateinit var questionTV: TextView
    lateinit  var btn:Button
+   lateinit var currentNumber:String
     private var context: String =""
     lateinit var queryEdt: TextInputEditText
+    val tag = "OngoingProcesses"
     val db = Firebase.firestore
    val sidLocation= db.collection("UserId").document("SID")
     val pInfoLocation=db.collection("UserId").document("PInfo")
@@ -40,16 +51,18 @@ class MainActivity : AppCompatActivity() {
         questionTV = findViewById(R.id.idTVQuestion)
         queryEdt = findViewById(R.id.idEdtQuery)
         btn= findViewById(R.id.button)
-
+        getNum()
+        btn.visibility=View.INVISIBLE
         btn.setOnClickListener {
-            val intent = Intent(this,MainActivity2::class.java)
-            startActivity(intent)
+            val optionQury = "Continue the above response."
+            promptcreator(optionQury)
         }
         // adding editor action listener for edit text on below line.
         queryEdt.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
                 // setting response tv on below line.
                 responseTV.text = "Please wait.."
+                Log.e(tag, "Send Button clicked")
                 // validating text
                 if (queryEdt.text.toString().length > 0) {
                     // calling get response to get the response.
@@ -63,99 +76,41 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun getResponse(query:String,context:String) {
-
-        val promptText1 = "$query. Role:You are a female emotional,mental supporter and motivator assistant. Previous Chat for context:$context"
-        val promptText = promptText1.replace("\\s+".toRegex(), " ")
-        // setting text on for question on below line.
-        questionTV.text = query
-        queryEdt.setText("")
-        // creating a queue for request queue.
-        val queue: RequestQueue = Volley.newRequestQueue(applicationContext)
-        // creating a json object on below line.
-        val jsonObject: JSONObject? = JSONObject()
-        // adding params to json object.
-        Toast.makeText(this, promptText,Toast.LENGTH_LONG).show()
-            jsonObject?.put("model", "text-davinci-003")
-            jsonObject?.put("prompt", promptText)
-            jsonObject?.put("temperature", 0)
-            jsonObject?.put("max_tokens", 50)
-            jsonObject?.put("top_p", 1)
-            jsonObject?.put("frequency_penalty", 0.0)
-            jsonObject?.put("presence_penalty", 0.0)
-
-
-        // on below line making json object request.
-        val postRequest: JsonObjectRequest =
-            // on below line making json object request.
-            object : JsonObjectRequest(Method.POST, url, jsonObject,
-                Response.Listener { response ->
-                    // on below line getting response message and setting it to text view.
-                    val responseMsg: String =
-                        response.getJSONArray("choices").getJSONObject(0).getString("text")
-                    responseTV.text = responseMsg
-
-
-                    val cText = "User:$query.\nBot:${responseMsg.toString()}"
-                    getNum(cText)
-                },
-                // adding on error listener
-                Response.ErrorListener { error ->
-                    Log.e("TAGAPI", "Error is : " + error.message + "\n" + error)
-                    Toast.makeText(this,"Error is ${error.message}",Toast.LENGTH_LONG).show()
-                }) {
-                override fun getHeaders(): kotlin.collections.MutableMap<kotlin.String, kotlin.String> {
-                    val params: MutableMap<String, String> = HashMap()
-                    // adding headers on below line.
-                    params["Content-Type"] = "application/json"
-                    params["Authorization"] =
-                        "Bearer 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"
-                    return params;
-                }
-            }
-
-        // on below line adding retry policy for our request.
-        postRequest.setRetryPolicy(object : RetryPolicy {
-            override fun getCurrentTimeout(): Int {
-                return 50000
-            }
-
-            override fun getCurrentRetryCount(): Int {
-                return 50000
-            }
-
-            @Throws(VolleyError::class)
-            override fun retry(error: VolleyError) {
-            }
-        })
-        // on below line adding our request to queue.
-        queue.add(postRequest)
-
-    }
     private fun promptcreator (query:String){
-
+        Log.e(tag, "Entered prompt creator")
         sidLocation.get()
             .addOnSuccessListener { document ->
                 if (document != null) {
                     Log.d("db", "DocumentSnapshot data: ${document.data}")
                     var p1 = document.get("1").toString()
                     var p2 = document.get("2").toString()
-//                    var p3 = document.get("3").toString()
-//                    var p4 = document.get("4").toString()
-//                    var p5 = document.get("5").toString()
+                    var p3 = document.get("3").toString()
+                    var a1 = document.get("4").toString()
+                    var a2 = document.get("5").toString()
+                    var a3 = document.get("6").toString()
                     if (p1=="null"){ p1="" }
                     if (p2=="null"){ p2="" }
-//                    if (p3=="null"){ p3="" }
-//                    if (p4=="null"){ p4="" }
-//                    if (p5=="null"){ p5="" }
-//                context = "$p1\n$p2\n$p3\n$p4\n$p5"
-                    context = "$p1\n$p2"
-                    if(p1=="null"&&p2=="null"){
-                        val promptText=query
-                    }else {
-                        val promptText = "$query (Previous conversation:$context)"
-                        getResponse(query,context)
+                    if (p3=="null"){ p3="" }
+                    if (a1=="null"){ a1="" }
+                    if (a2=="null"){ a2="" }
+                    if (a3=="null"){ a3="" }
+                    Log.e(tag, "p1:$p1 ,p2:$p2 ,p3:$p3 , a1:$a1 ,a2:$a2 ,a3:$a3 ")
+                    if (currentNumber=="1"){
+                        chatCompletion(query,p1,p2,p3,a1,a2,a3)
+                    }else if (currentNumber=="2"){
+                        chatCompletion(query,p3,p2,p1,a3,a2,a1)
+                    }else if (currentNumber=="3"){
+                        chatCompletion(query,p3,p1,p2,a3,a1,a2)
                     }
+
+//                context = "$p1\n$p2\n$p3\n$p4\n$p5"
+//                    context = "$p1\n$p2"
+//                    if(p1=="null"&&p2=="null"){
+//
+//                    }else {
+//
+//                        getResponse(query,context)
+//                    }
                 } else {
                     Log.d("db", "No such document")
                 }
@@ -164,41 +119,116 @@ class MainActivity : AppCompatActivity() {
                 Log.d("db", "get failed with ", exception)
             }
     }
-    private fun getNum(promptAndresponse:String){
+    private fun getNum(){
+        Log.e(tag, "Entered get Num")
         pInfoLocation.get()
             .addOnSuccessListener{document ->
                 if(document!=null){
                     val num =document.get("Num")
                     if (num!=null){
-                        promptUpload(promptAndresponse,num.toString())
-                    }else{
-                      promptUpload(promptAndresponse,"1")
+                       currentNumber=num.toString()
+                        if (currentNumber=="null"){
+                            currentNumber="1"
+                        }
                     }
+                    Log.e(tag, "NUm is:$currentNumber")
                 }
             }
     }
-    private fun promptUpload(prompt:String,num:String){
+    private fun promptUpload(prompt:String,ans:String){
+        Log.e(tag, "Entered prompt upload")
+        val num = currentNumber
         val uData = hashMapOf(num to prompt)
         sidLocation.set(uData, SetOptions.merge())
             .addOnSuccessListener {
-                increment(num.toInt())
+                val num1 = num.toInt()
+                val num2 = num1+3
+                val aData = hashMapOf(num2.toString() to ans)
+                sidLocation.set(aData, SetOptions.merge()).addOnSuccessListener {
+                    increment(num.toInt())
+                    Log.e(tag, "upload successful")
+                }
+                    .addOnFailureListener{
+
+                }
+
             }
             .addOnFailureListener{
 
             }
     }
     private fun increment(num:Int){
-        if (num<2){
+        Log.e(tag, "Entered Number Increment")
+        if (num<3){
             val iNum = num+1
             val pNum = hashMapOf("Num" to iNum)
             pInfoLocation.set(pNum)
+            currentNumber = iNum.toString()
         }else{
             val pNum = hashMapOf("Num" to 1)
             pInfoLocation.set(pNum)
-
+            currentNumber="1"
         }
     }
-    private fun chatCompletion(p1:String){
+    private fun chatCompletion(currentP:String,p1:String,p2:String,p3:String,a1:String,a2:String,a3:String){
+        Log.e(tag, "Entered chat completion, Current prompt:$currentP")
+        questionTV.text = currentP
+        queryEdt.setText("")
+        GlobalScope.launch(Dispatchers.IO) {
+            val client = OkHttpClient()
 
+            val MEDIA_TYPE = "application/json".toMediaType()
+
+            val requestBody = """
+                {
+                    "model": "gpt-3.5-turbo",
+                    "messages": [ {"role": "system", "content": "You are a female emotional,mental supporter and motivator assistant which answers short but in impactful way , Your Name is Aura."},
+        {"role": "user", "content": "$p1"},
+        {"role": "assistant", "content": "$a1"},
+         {"role": "user", "content": "$p2"},
+        {"role": "assistant", "content": "$a2"},
+         {"role": "user", "content": "$p3"},
+        {"role": "assistant", "content": "$a3"},
+        {"role": "user", "content": "$currentP"}],
+        "max_tokens": 50
+                }
+            """.trimIndent()
+
+            val OPENAI_API_KEY = "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"
+            val request = Request.Builder()
+                .url("https://api.openai.com/v1/chat/completions")
+                .post(requestBody.toRequestBody(MEDIA_TYPE))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer $OPENAI_API_KEY")
+                .build()
+
+            try {
+                val response = client.newCall(request).execute()
+                val responseString = response.body?.string()
+
+                runOnUiThread {
+                    val responseObj = JSONObject(responseString)
+                    val choicesArray = responseObj.getJSONArray("choices")
+                    val messageObj = choicesArray.getJSONObject(0).getJSONObject("message")
+                    val content = messageObj.getString("content")
+                    val jsonObject = JSONObject(responseString)
+                    val usageObject = jsonObject.getJSONObject("usage")
+                    val completionTokens = usageObject.getInt("completion_tokens")
+                    val tokens = completionTokens.toInt()
+                     Toast.makeText(this@MainActivity,"Tokens:$tokens",Toast.LENGTH_LONG).show()
+                    responseTV.text=content
+                    tokenCal(tokens)
+                    Log.e(tag, "Got response:$content")
+                    promptUpload(currentP,content)
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }
+    fun tokenCal(token:Int){
+        if (token==50){
+            btn.visibility=View.VISIBLE
+        }
     }
 }
