@@ -7,7 +7,7 @@
     android:background="@color/back_color"
     tools:context=".MainActivity">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/idTILQuery"
@@ -26,10 +26,11 @@
             <!-- text view for displaying question-->
             <TextView
                 android:id="@+id/Aura"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
                 android:padding="2dp"
+                android:layout_gravity="center_horizontal"
                 android:gravity="center"
                 android:text="Aura"
                 android:textColor="@color/white"
@@ -38,21 +39,25 @@
             <!-- text view for displaying response-->
             <TextView
                 android:id="@+id/idDescription"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
-                android:padding="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:padding="2dp"
+                android:layout_gravity="center_horizontal"
                 android:gravity="center"
                 android:text="Feel the Aura"
                 android:textColor="@color/white"
                 android:textSize="15sp" />
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                app:reverseLayout="true"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
             <Button
                 android:id="@+id/button"
+                android:backgroundTint="@color/btn_color"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/continue_the_above_response" />
@@ -60,14 +65,14 @@
 
         </LinearLayout>
 
-    </ScrollView>
+    </LinearLayout>
     <!-- text field for asking question-->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/idTILQuery"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="5dp"
+        android:layout_margin="1dp"
         android:hint="Enter your query"
         android:padding="5dp"
         android:textColorHint="@color/white"
@@ -85,5 +90,7 @@
             android:textColor="@color/white"
             android:textColorHint="@color/white"
             android:textSize="14sp" />
+
+
     </com.google.android.material.textfield.TextInputLayout>
 </RelativeLayout>

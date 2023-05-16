@@ -1,10 +1,13 @@
 package com.example.aura
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ScrollView
 import android.widget.TextView
@@ -109,8 +112,11 @@ class MainActivity : AppCompatActivity() {
                     val aa1 = optimizeStringForJson(a1)
                     val aa2 = optimizeStringForJson(a2)
                     val aa3 = optimizeStringForJson(a3)
-                    message.add(query)
-                    adapter.notifyDataSetChanged()
+                    val queryN = "1$query"
+                    updateRview(queryN)
+                    closeKeyboard(this)
+                    updateRview("2Please wait...")
+                    scrollToBottom()
 
                     Log.e(tag, "p1:$p1 ,p2:$p2 ,p3:$p3 , a1:$a1 ,a2:$a2 ,a3:$a3 ")
                     if (currentNumber == "1") {
@@ -252,18 +258,15 @@ class MainActivity : AppCompatActivity() {
                     val completionTokens = usageObject.getInt("completion_tokens")
                     val promptTokens = usageObject.getInt("prompt_tokens")
                     val tokens = completionTokens
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Response Tokens:$tokens , Prompt Token:$promptTokens",
-                        Toast.LENGTH_LONG
-                    ).show()
 
-                    message.add(content)
-                    adapter.notifyDataSetChanged()
 
+                    val promptN="1$currentP"
+                    val contentN="2$content"
+                    editLastIndex(contentN)
                     tokenCal(tokens)
                     Log.e(tag, "Got response:$content")
-                    promptUpload(currentP, content)
+                    scrollToBottom()
+                    promptUpload(promptN, contentN)
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -285,6 +288,8 @@ class MainActivity : AppCompatActivity() {
             .replace("\r", "\\r")  // Escape carriage returns
             .replace("\t", "\\t")  // Escape tabs
             .replace("\\s+".toRegex(), " ")
+            .removePrefix("1")
+            .removePrefix("2")
         val unicodeEscapedInput = StringBuilder()
         for (c in escapedInput) {
             if (c.toInt() < 128) {
@@ -298,16 +303,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun recyclerViewAdd() {
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
-        // Create and set the adapter for the RecyclerView
-        adapter = ChatAdapter()
-        recyclerView.adapter = adapter
-
-        // Add sample messages to the adapte
-        adapter.submitList(message)
-
+//        recyclerView = findViewById(R.id.recyclerView)
+//        recyclerView.layoutManager = LinearLayoutManager(this)
+//        // Create and set the adapter for the RecyclerView
+//        adapter = ChatAdapter(message)
+//        recyclerView.adapter = adapter
+//
+//        // Add sample messages to the adapte
+//        adapter.submitList(message)
+        scrollToBottom()
     }
 
     fun historyDownload() {
@@ -367,4 +371,39 @@ class MainActivity : AppCompatActivity() {
 
             }
     }
+   fun updateRview(content:String){
+//       message.add(content) // Add the new message to the mutable list
+       adapter.addItem(content)
+
+   }
+    fun editLastIndex(content:String){
+        // Get the index of the last element in the mutable list
+        val lastIndex = message.lastIndex
+
+// Replace the last element with the new element
+        message[lastIndex] = content
+
+// Notify the RecyclerView adapter that the data set has changed
+        adapter.notifyItemChanged(lastIndex)
+
+
+    }
+    fun closeKeyboard(activity: Activity) {
+        val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val view = activity.currentFocus ?: View(activity)
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+   fun scrollToBottom(){
+       recyclerView = findViewById(R.id.recyclerView)
+       recyclerView.layoutManager = LinearLayoutManager(this)
+       val layoutManager = LinearLayoutManager(this)
+       layoutManager.stackFromEnd = true
+       layoutManager.reverseLayout = true
+       // Create and set the adapter for the RecyclerView
+       adapter = ChatAdapter(message)
+       recyclerView.adapter = adapter
+       adapter.submitList(message)
+       // Add sample messages to the adapte
+       recyclerView.scrollToPosition(adapter.itemCount - 1)
+   }
 }

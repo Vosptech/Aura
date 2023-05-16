@@ -11,8 +11,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
-class ChatAdapter : ListAdapter<String, ChatAdapter.MessageViewHolder>(MessageDiffCallback()) {
+class ChatAdapter (private val messageList: MutableList<String>) : ListAdapter<String, ChatAdapter.MessageViewHolder>(MessageDiffCallback()) {
     var state = 1
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.message_item, parent, false)
         return MessageViewHolder(view)
@@ -24,25 +25,38 @@ class ChatAdapter : ListAdapter<String, ChatAdapter.MessageViewHolder>(MessageDi
         holder.bind(message)
     }
 
+    fun addItem(message: String) {
+        messageList.add(message)
+        notifyItemInserted(messageList.size - 1)
+    }
+
+
     inner class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private val messageTextView: TextView = itemView.findViewById(R.id.messageTextView)
 
         fun bind(message: String) {
-            if (state==1){
-                messageTextView.gravity=Gravity.END
-                state=0
-                updateMargin(140,10,5,5)
-                updateLayoutGravity(Gravity.END)
-                messageTextView.setBackgroundResource(R.drawable.chat_bg2)
-            }else if (state==0){
-                messageTextView.gravity=Gravity.START
-                state=1
-                updateLayoutGravity(Gravity.START)
-                updateMargin(5,10,140,5)
-                messageTextView.setBackgroundResource(R.drawable.chat_message_background)
-            }
-            messageTextView.text = message
+            val num = message[0].toString()
+                if (num=="1") {
+                    val nMessage=message.removePrefix("1")
+                    messageTextView.gravity = Gravity.END
+                    state = 0
+                    updateMargin(140, 10, 5, 5)
+                    updateLayoutGravity(Gravity.END)
+                    messageTextView.setBackgroundResource(R.drawable.chat_bg2)
+                    messageTextView.text = nMessage
+                } else if (num == "2") {
+                    val nMessage=message.removePrefix("2")
+                    messageTextView.gravity = Gravity.START
+                    state = 1
+                    updateLayoutGravity(Gravity.START)
+                    updateMargin(5, 10, 140, 5)
+                    messageTextView.setBackgroundResource(R.drawable.chat_message_background)
+                    messageTextView.text = nMessage
+                }
+
+
+
         }
         private fun updateMargin(leftMargin: Int, topMargin: Int, rightMargin: Int, bottomMargin: Int) {
             val layoutParams = messageTextView.layoutParams as ViewGroup.MarginLayoutParams
@@ -54,6 +68,8 @@ class ChatAdapter : ListAdapter<String, ChatAdapter.MessageViewHolder>(MessageDi
             layoutParams.gravity = gravity
             messageTextView.layoutParams = layoutParams
         }
+
+
     }
 
     class MessageDiffCallback : DiffUtil.ItemCallback<String>() {
