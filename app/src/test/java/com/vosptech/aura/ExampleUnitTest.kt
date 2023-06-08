@@ -1,4 +1,4 @@
-package com.example.aura
+package com.vosptech.aura
 
 import org.junit.Test
 

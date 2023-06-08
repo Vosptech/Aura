@@ -1,4 +1,4 @@
-package com.example.aura
+package com.vosptech.aura
 
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -37,23 +36,24 @@ class ChatAdapter (private val messageList: MutableList<String>) : ListAdapter<S
 
         fun bind(message: String) {
             val num = message[0].toString()
-                if (num=="1") {
-                    val nMessage=message.removePrefix("1")
-                    messageTextView.gravity = Gravity.END
-                    state = 0
-                    updateMargin(140, 10, 5, 5)
-                    updateLayoutGravity(Gravity.END)
-                    messageTextView.setBackgroundResource(R.drawable.chat_bg2)
-                    messageTextView.text = nMessage
-                } else if (num == "2") {
-                    val nMessage=message.removePrefix("2")
-                    messageTextView.gravity = Gravity.START
-                    state = 1
-                    updateLayoutGravity(Gravity.START)
-                    updateMargin(5, 10, 140, 5)
-                    messageTextView.setBackgroundResource(R.drawable.chat_message_background)
-                    messageTextView.text = nMessage
-                }
+
+            if (num=="1") {
+                val nMessage=message.removePrefix("1")
+                messageTextView.gravity = Gravity.END
+                state = 0
+                updateMargin(140, 10, 5, 5)
+                updateLayoutGravity(Gravity.END)
+                messageTextView.setBackgroundResource(R.drawable.chat_bg2)
+                messageTextView.text = nMessage
+            } else if (num == "2") {
+                val nMessage=message.removePrefix("2")
+                messageTextView.gravity = Gravity.START
+                state = 1
+                updateLayoutGravity(Gravity.START)
+                updateMargin(5, 10, 140, 5)
+                messageTextView.setBackgroundResource(R.drawable.chat_message_background)
+                messageTextView.text = nMessage
+            }
 
 
 

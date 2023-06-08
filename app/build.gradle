@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.aura'
+    namespace 'com.vosptech.aura'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.aura"
+        applicationId "com.vosptech.aura"
         minSdk 24
         targetSdk 33
         versionCode 1

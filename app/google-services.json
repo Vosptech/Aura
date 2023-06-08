@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "724706822211",
-    "project_id": "aura-6b1ee",
-    "storage_bucket": "aura-6b1ee.appspot.com"
+    "project_number": "544236878186",
+    "project_id": "aura-7aad4",
+    "storage_bucket": "aura-7aad4.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:724706822211:android:25740e2e8201a6e2356cf6",
+        "mobilesdk_app_id": "1:544236878186:android:6f26a84c4c86c220ec0d13",
         "android_client_info": {
-          "package_name": "com.example.aura"
+          "package_name": "com.vosptech.aura"
         }
       },
       "oauth_client": [
         {
-          "client_id": "724706822211-du7di7gljop80qqpgfpshs6t33pqksg0.apps.googleusercontent.com",
+          "client_id": "544236878186-3hferj6jk3ginu7m51sfesr4sra1i6i9.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDwiAqvYsGleEN-5dZ5SEl0S02gx8KOomA"
+          "current_key": "AIzaSyDQTUA7rpcTYr0_0yBb84OxLiO96aP4Czc"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "724706822211-du7di7gljop80qqpgfpshs6t33pqksg0.apps.googleusercontent.com",
+              "client_id": "544236878186-3hferj6jk3ginu7m51sfesr4sra1i6i9.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

@@ -1,15 +1,13 @@
-package com.example.aura
+package com.vosptech.aura
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -38,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var currentNumber: String
     private lateinit var queryEdt: TextInputEditText
     private val tag = "OngoingProcesses"
-    val message = mutableListOf<String>()
+    private val message = mutableListOf<String>()
     private val db = Firebase.firestore
     private val sidLocation = db.collection("UserId").document("SID")
     private val pInfoLocation = db.collection("UserId").document("PInfo")
@@ -49,8 +47,13 @@ class MainActivity : AppCompatActivity() {
         // initializing variables on below line.
         queryEdt = findViewById(R.id.idEdtQuery)
         btn = findViewById(R.id.button)
+        currentNumber="1"
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        // Create and set the adapter for the RecyclerView
+        adapter = ChatAdapter(message)
+        recyclerView.adapter = adapter
         getNum()
-
         btn.visibility = View.INVISIBLE
         btn.setOnClickListener {
             val optionQury = "Continue the above response."
@@ -123,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                         chatCompletion(query, ap1, ap2, ap3, aa1, aa2, aa3)
 
                     } else if (currentNumber == "2") {
-                        chatCompletion(query, ap3, ap2, ap1, aa3, aa2, aa1)
+                        chatCompletion(query, ap2, ap3, ap1, aa3, aa2, aa1)
 
                     } else if (currentNumber == "3") {
                         chatCompletion(query, ap3, ap1, ap2, aa3, aa1, aa2)
@@ -234,7 +237,7 @@ class MainActivity : AppCompatActivity() {
                 }
             """.trimIndent()
             Log.d("prompts", requestBody)
-            val OPENAI_API_KEY = "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"
+            val OPENAI_API_KEY = "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"
             val request = Request.Builder()
                 .url("https://api.openai.com/v1/chat/completions")
                 .post(requestBody.toRequestBody(MEDIA_TYPE))
@@ -280,7 +283,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun optimizeStringForJson(input: String): String {
+    private fun optimizeStringForJson(input: String): String {
         val escapedInput = input
             .replace("\\", "\\\\")  // Escape backslashes
             .replace("\"", "\\\"")  // Escape double quotes
@@ -302,7 +305,7 @@ class MainActivity : AppCompatActivity() {
         return unicodeEscapedInput.toString()
     }
 
-    fun recyclerViewAdd() {
+    private fun recyclerViewAdd() {
 //        recyclerView = findViewById(R.id.recyclerView)
 //        recyclerView.layoutManager = LinearLayoutManager(this)
 //        // Create and set the adapter for the RecyclerView
@@ -314,7 +317,7 @@ class MainActivity : AppCompatActivity() {
         scrollToBottom()
     }
 
-    fun historyDownload() {
+    private fun historyDownload() {
         sidLocation.get()
             .addOnSuccessListener { document ->
                 if (document != null) {
@@ -371,12 +374,12 @@ class MainActivity : AppCompatActivity() {
 
             }
     }
-   fun updateRview(content:String){
+    private fun updateRview(content:String){
 //       message.add(content) // Add the new message to the mutable list
-       adapter.addItem(content)
+        adapter.addItem(content)
 
-   }
-    fun editLastIndex(content:String){
+    }
+    private fun editLastIndex(content:String){
         // Get the index of the last element in the mutable list
         val lastIndex = message.lastIndex
 
@@ -388,22 +391,22 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-    fun closeKeyboard(activity: Activity) {
+    private fun closeKeyboard(activity: Activity) {
         val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         val view = activity.currentFocus ?: View(activity)
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
-   fun scrollToBottom(){
-       recyclerView = findViewById(R.id.recyclerView)
-       recyclerView.layoutManager = LinearLayoutManager(this)
-       val layoutManager = LinearLayoutManager(this)
-       layoutManager.stackFromEnd = true
-       layoutManager.reverseLayout = true
-       // Create and set the adapter for the RecyclerView
-       adapter = ChatAdapter(message)
-       recyclerView.adapter = adapter
-       adapter.submitList(message)
-       // Add sample messages to the adapte
-       recyclerView.scrollToPosition(adapter.itemCount - 1)
-   }
+    private fun scrollToBottom(){
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val layoutManager = LinearLayoutManager(this)
+        layoutManager.stackFromEnd = true
+        layoutManager.reverseLayout = true
+        // Create and set the adapter for the RecyclerView
+        adapter = ChatAdapter(message)
+        recyclerView.adapter = adapter
+        adapter.submitList(message)
+        // Add sample messages to the adapte
+        recyclerView.scrollToPosition(adapter.itemCount - 1)
+    }
 }
