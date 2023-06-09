@@ -14,7 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "544236878186-3hferj6jk3ginu7m51sfesr4sra1i6i9.apps.googleusercontent.com",
+          "client_id": "544236878186-aufl3sidfjo24lnvfhjs4i33a53srec0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vosptech.aura",
+            "certificate_hash": "77677c695991aed39b87aad0e1df742e4cb5f251"
+          }
+        },
+        {
+          "client_id": "544236878186-i6dkbodj7n762r9ob37memo42ha9flbk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],

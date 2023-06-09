@@ -4,4 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="back_color">#000000</color>
     <color name="edt_back_color">#464141</color>
+    <color name="light_gery">#ededed</color>
+    <color name="main_color">#3DE9FF</color>
+    <color name="dark_grey">#292929</color>
 </resources>

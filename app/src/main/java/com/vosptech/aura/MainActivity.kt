@@ -2,18 +2,24 @@ package com.vosptech.aura
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -32,14 +38,17 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var btn: Button
     private lateinit var recyclerView: RecyclerView
+    private lateinit var auth: FirebaseAuth
     private lateinit var adapter: ChatAdapter
     private lateinit var currentNumber: String
-    private lateinit var queryEdt: TextInputEditText
+    private lateinit var queryEdt: EditText
+    private lateinit var sendBtn: ImageView
+    private lateinit var menuBtn : ImageView
     private val tag = "OngoingProcesses"
     private val message = mutableListOf<String>()
     private val db = Firebase.firestore
-    private val sidLocation = db.collection("UserId").document("SID")
-    private val pInfoLocation = db.collection("UserId").document("PInfo")
+    private lateinit var sidLocation :DocumentReference
+    private lateinit var pInfoLocation:DocumentReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,16 +57,36 @@ class MainActivity : AppCompatActivity() {
         queryEdt = findViewById(R.id.idEdtQuery)
         btn = findViewById(R.id.button)
         currentNumber="1"
+        auth=Firebase.auth
+        val currentUser = auth.currentUser
+        val userId= currentUser?.uid.toString()
+        menuBtn=findViewById(R.id.menuButton)
+        menuBtn.setOnClickListener {
+            val intent = Intent(this,MenuActivity::class.java)
+            startActivity(intent)
+        }
+        sidLocation = db.collection(userId).document("SID")
+        pInfoLocation = db.collection(userId).document("PInfo")
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         // Create and set the adapter for the RecyclerView
         adapter = ChatAdapter(message)
         recyclerView.adapter = adapter
         getNum()
-        btn.visibility = View.INVISIBLE
+        btn.visibility = View.GONE
         btn.setOnClickListener {
+            btn.visibility=View.GONE
             val optionQury = "Continue the above response."
             promptcreator(optionQury)
+        }
+        sendBtn=findViewById(R.id.sendBtn)
+        sendBtn.setOnClickListener {
+            if (queryEdt.text.toString().isNotEmpty()) {
+                // calling get response to get the response.
+                promptcreator(queryEdt.text.toString())
+            } else {
+            Toast.makeText(this, "Please enter your query..", Toast.LENGTH_SHORT).show()
+        }
         }
         // adding editor action listener for edit text on below line.
         queryEdt.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
@@ -278,7 +307,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun tokenCal(token: Int) {
-        if (token == 150) {
+        if ( token >=150) {
             btn.visibility = View.VISIBLE
         }
     }

@@ -4,36 +4,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/back_color"
     tools:context="com.vosptech.aura.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/idTILQuery"
+        android:layout_above="@id/horizontal_layout"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginEnd="5dp"
-        android:layout_marginBottom="5dp"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
         android:padding="3dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:background="?attr/colorSecondary"
             android:orientation="vertical">
-
+           <LinearLayout
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:orientation="horizontal"
+               android:gravity="center"
+               android:background="?attr/colorPrimary">
+               <LinearLayout
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_marginStart="50dp"
+                   android:layout_weight="1"
+                   android:orientation="vertical">
             <!-- text view for displaying question-->
             <TextView
                 android:id="@+id/Aura"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
-                android:padding="2dp"
                 android:layout_gravity="center_horizontal"
                 android:gravity="center"
                 android:text="Aura"
-                android:textColor="@color/white"
+                android:textColor="?attr/color"
                 android:textSize="25sp" />
 
             <!-- text view for displaying response-->
@@ -46,11 +57,20 @@
                 android:layout_gravity="center_horizontal"
                 android:gravity="center"
                 android:text="Feel the Aura"
-                android:textColor="@color/white"
+                android:textColor="?attr/color"
                 android:textSize="15sp" />
+               </LinearLayout>
+               <ImageView
+                   android:id="@+id/menuButton"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:padding="10dp"
+                   android:src="@drawable/round_menu_24"/>
+           </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
                 app:reverseLayout="true"
+                android:layout_weight="1"
                 android:layout_gravity="center_horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -58,7 +78,11 @@
             <Button
                 android:id="@+id/button"
                 android:backgroundTint="@color/btn_color"
-                android:layout_width="match_parent"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/continue_the_above_response" />
 
@@ -67,30 +91,47 @@
 
     </LinearLayout>
     <!-- text field for asking question-->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/idTILQuery"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/horizontal_layout"
+        android:background="?attr/colorPrimary"
         android:layout_alignParentBottom="true"
-        android:layout_margin="1dp"
-        android:hint="Enter your query"
-        android:padding="5dp"
-        android:textColorHint="@color/white"
-        app:hintTextColor="@color/white">
+        android:orientation="horizontal">
 
-        <com.google.android.material.textfield.TextInputEditText
+
+        <EditText
             android:id="@+id/idEdtQuery"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/edt_back_color"
+            android:background="@drawable/edit_text_background"
             android:ems="10"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_marginTop="8dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="1dp"
+            android:layout_marginBottom="9dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingEnd="20dp"
+            android:paddingStart="20dp"
+            app:hintTextColor="@color/white"
+            android:hint="Enter your query"
             android:imeOptions="actionSend"
-            android:importantForAutofill="no"
             android:inputType="textEmailAddress"
-            android:textColor="@color/white"
-            android:textColorHint="@color/white"
+            android:textColor="?attr/color"
             android:textSize="14sp" />
 
 
-    </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+           android:id="@+id/sendBtn"
+            android:padding="3dp"
+            android:layout_marginStart="10dp"
+            android:src="@drawable/round_send_24"/>
+
+    </LinearLayout>
 </RelativeLayout>
