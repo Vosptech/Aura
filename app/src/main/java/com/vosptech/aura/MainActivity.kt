@@ -16,7 +16,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
@@ -36,7 +35,7 @@ import java.io.IOException
 class MainActivity : AppCompatActivity() {
     // creating variables on below line.
 
-    private lateinit var btn: Button
+    private lateinit var continueAboveResponsebtn: Button
     private lateinit var recyclerView: RecyclerView
     private lateinit var auth: FirebaseAuth
     private lateinit var adapter: ChatAdapter
@@ -55,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         // initializing variables on below line.
         queryEdt = findViewById(R.id.idEdtQuery)
-        btn = findViewById(R.id.button)
+        continueAboveResponsebtn = findViewById(R.id.button)
         currentNumber="1"
         auth=Firebase.auth
         val currentUser = auth.currentUser
@@ -73,9 +72,9 @@ class MainActivity : AppCompatActivity() {
         adapter = ChatAdapter(message)
         recyclerView.adapter = adapter
         getNum()
-        btn.visibility = View.GONE
-        btn.setOnClickListener {
-            btn.visibility=View.GONE
+        continueAboveResponsebtn.visibility = View.GONE
+        continueAboveResponsebtn.setOnClickListener {
+            continueAboveResponsebtn.visibility=View.GONE
             val optionQury = "Continue the above response."
             promptcreator(optionQury)
         }
@@ -108,6 +107,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun promptcreator(query: String) {
+        continueAboveResponsebtn.visibility=View.GONE
         Log.e(tag, "Entered prompt creator")
         sidLocation.get()
             .addOnSuccessListener { document ->
@@ -308,7 +308,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun tokenCal(token: Int) {
         if ( token >=150) {
-            btn.visibility = View.VISIBLE
+            continueAboveResponsebtn.visibility = View.VISIBLE
         }
     }
 
