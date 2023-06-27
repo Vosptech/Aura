@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
@@ -14,8 +16,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
@@ -31,14 +37,24 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
     // creating variables on below line.
-
     private lateinit var continueAboveResponsebtn: Button
     private lateinit var recyclerView: RecyclerView
     private lateinit var auth: FirebaseAuth
     private lateinit var adapter: ChatAdapter
+    private lateinit var rootView: View
+    private lateinit var recyclerViewBottomSheet: RecyclerView
+    private val sessions = mutableListOf<Session>()
+    private lateinit var sessionAdapter: SessionAdapter
+    private lateinit var closeImageViewBtn: ImageView
+    private lateinit var sessionNameEditText: TextInputEditText
+    private lateinit var sessionNameOutBox: TextInputLayout
+    private lateinit var newChat: LinearLayoutCompat
+    private lateinit var startChatBtn:Button
+    private lateinit var userId:String
     private lateinit var currentNumber: String
     private lateinit var queryEdt: EditText
     private lateinit var sendBtn: ImageView
@@ -53,25 +69,25 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         // initializing variables on below line.
+        openSessionBottomSheet()
         queryEdt = findViewById(R.id.idEdtQuery)
         continueAboveResponsebtn = findViewById(R.id.button)
         currentNumber="1"
         auth=Firebase.auth
         val currentUser = auth.currentUser
-        val userId= currentUser?.uid.toString()
+         userId= currentUser?.uid.toString()
         menuBtn=findViewById(R.id.menuButton)
         menuBtn.setOnClickListener {
             val intent = Intent(this,MenuActivity::class.java)
             startActivity(intent)
         }
-        sidLocation = db.collection(userId).document("SID")
-        pInfoLocation = db.collection(userId).document("PInfo")
+        sidLocation = db.collection(userId).document("SessionId").collection("context").document("chatContext")
+        pInfoLocation = db.collection(userId).document("SessionId")
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         // Create and set the adapter for the RecyclerView
         adapter = ChatAdapter(message)
         recyclerView.adapter = adapter
-        getNum()
         continueAboveResponsebtn.visibility = View.GONE
         continueAboveResponsebtn.setOnClickListener {
             continueAboveResponsebtn.visibility=View.GONE
@@ -207,7 +223,8 @@ class MainActivity : AppCompatActivity() {
                 val num1 = num.toInt()
                 val num2 = num1 + 3
                 val aData = hashMapOf(num2.toString() to ans)
-                sidLocation.set(aData, SetOptions.merge()).addOnSuccessListener {
+                sidLocation.set(aData, SetOptions.merge())
+                    .addOnSuccessListener {
                     increment(num.toInt())
                     Log.e(tag, "upload successful")
                 }
@@ -438,4 +455,137 @@ class MainActivity : AppCompatActivity() {
         // Add sample messages to the adapte
         recyclerView.scrollToPosition(adapter.itemCount - 1)
     }
+
+    fun openMenu(view: View) {
+        startActivity(Intent(this,MenuActivity::class.java))
+    }
+
+    private fun openSessionBottomSheet() {
+       launchBottomSheet()
+    }
+
+    fun openBottomSheetSecondaryAction(view: View) {
+       launchBottomSheet()
+    }
+    fun loadChats(sessionId:String){
+        pInfoLocation = db.collection(userId).document(sessionId)
+        sidLocation = db.collection(userId).document(sessionId).collection("context").document("chatContext")
+        getNum()
+    }
+    private fun launchBottomSheet (){
+        var recyclerViewBottomSheet:RecyclerView
+        val dialog=BottomSheetDialog(this)
+         rootView = layoutInflater.inflate(R.layout.fragment_bottom_sheet,null)
+        val titleTextView = rootView.findViewById<TextView>(R.id.text_title)
+        startChatBtn=rootView.findViewById(R.id.buttonStartChat)
+        auth=Firebase.auth
+        userId= auth.currentUser?.uid.toString()
+        closeImageViewBtn=rootView.findViewById(R.id.closeImageViewButton)
+        sessionNameEditText=rootView.findViewById(R.id.sessionNameEditText)
+        newChat=rootView.findViewById(R.id.newChatLayout)
+        sessionNameOutBox=rootView.findViewById(R.id.sessionNameOutBox)
+        recyclerViewBottomSheet=rootView.findViewById(R.id.bottomSheetRecyclerView)
+        sessionNameOutBox.visibility=View.GONE
+        sessionNameEditText.visibility=View.GONE
+        startChatBtn.visibility=View.GONE
+        newChat.setOnClickListener {
+            titleTextView.visibility=View.GONE
+            recyclerViewBottomSheet.visibility=View.GONE
+            newChat.visibility=View.GONE
+            sessionNameOutBox.visibility=View.VISIBLE
+            sessionNameEditText.visibility=View.VISIBLE
+            startChatBtn.visibility=View.VISIBLE
+        }
+
+        recyclerViewBottomSheet = rootView.findViewById(R.id.bottomSheetRecyclerView)
+        sessionAdapter = SessionAdapter(sessions) { sessionId ->
+            loadChats(sessionId)
+            dialog.dismiss()
+            // Handle click event and use the session ID
+            // Here, you can open a new activity or perform any other action
+        }
+        recyclerViewBottomSheet.adapter = sessionAdapter
+        recyclerViewBottomSheet.layoutManager = LinearLayoutManager(this)
+        val sessionRef=db.collection(userId)
+        sessionRef.get()
+            .addOnSuccessListener { querySnapshot ->
+            for (document in querySnapshot.documents) {
+                val sessionId = document.getString("sessionId")
+                val sessionName = document.getString("sessionName")
+                if (sessionId != null && sessionName != null) {
+                    val session = Session(sessionId, sessionName)
+                    sessions.add(session)
+                }
+            }
+            sessionAdapter.notifyDataSetChanged()
+        }
+
+        startChatBtn.setOnClickListener {
+            //Store chat name to
+            val sessionName = sessionNameEditText.text.toString()
+            val sessionId=getTimeInMillis().toString()
+            val data = hashMapOf("sessionName" to sessionName,
+                "Num" to "1",
+                "sessionId" to sessionId,
+                "chatNumber" to 0)
+            val docRef=db.collection(userId).document(sessionId)
+            docRef.set(data)
+                .addOnSuccessListener {
+                    loadChats(sessionId)
+                        dialog.dismiss()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(MainActivity(),"Failed to start the Chat due to $it",Toast.LENGTH_LONG).show()
+                }
+        }
+        dialog.setCancelable(false)
+
+        // on below line we are setting
+        // content view to our view.
+        dialog.setContentView(rootView)
+
+        // on below line we are calling
+        // a show method to display a dialog.
+        dialog.show()
+    }
+    private fun getTimeInMillis():Long{
+        return Calendar.getInstance().timeInMillis
+    }
+
 }
+class SessionAdapter(
+    private val sessions: List<Session>,
+    private val onItemClick: (String) -> Unit
+) : RecyclerView.Adapter<SessionAdapter.SessionViewHolder>() {
+
+    inner class SessionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val sessionNameTextView: TextView = itemView.findViewById(R.id.sessionName)
+
+        fun bind(session: Session) {
+            sessionNameTextView.text = session.sessionName
+            itemView.setOnClickListener { onItemClick(session.sessionId) }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
+        val itemView = LayoutInflater.from(parent.context).inflate(
+            R.layout.session_item,
+            parent,
+            false
+        )
+        return SessionViewHolder(itemView)
+    }
+
+    override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
+        val session = sessions[position]
+        holder.bind(session)
+    }
+
+    override fun getItemCount(): Int {
+        return sessions.size
+    }
+}
+data class Session(
+    val sessionId:String,
+    val sessionName:String
+)

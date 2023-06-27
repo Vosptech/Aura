@@ -20,17 +20,13 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.util.Random
 import java.util.Timer
 import java.util.TimerTask
 
 class AuthActivity : AppCompatActivity() {
     private val REQ_ONE_TAP = 2  // Can be any integer unique to the Activity
-    private val TAG = "Auth Process"
+    private val TAG = "AuthProcess"
     private var isNewUser: Boolean? = null
     private lateinit var signInWithGoogleBtn:Button
     private lateinit var auth: FirebaseAuth
@@ -192,8 +188,8 @@ class AuthActivity : AppCompatActivity() {
             .addOnFailureListener(this) { e ->
                 // No saved credentials found. Launch the One Tap sign-up flow, or
                 // do nothing and continue presenting the signed-out UI.
-                Log.d(TAG,"failed to get saved credentials")
-                Log.d(TAG, e.localizedMessage.toString())
+                Log.d(TAG,"1failed to get saved credentials")
+                Log.d(TAG, e.localizedMessage?.toString() ?: "")
                 oneTapClient = Identity.getSignInClient(this)
                 signUpRequest = BeginSignInRequest.builder()
                     .setGoogleIdTokenRequestOptions(
@@ -217,6 +213,7 @@ class AuthActivity : AppCompatActivity() {
                     }
                     .addOnFailureListener(this) { f ->
                         // No Google Accounts found. Just continue presenting the signed-out UI.
+                        Log.d(TAG,"2")
                         Log.d(TAG, f.localizedMessage.toString())
                     }
             }

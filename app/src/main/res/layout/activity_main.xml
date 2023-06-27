@@ -29,10 +29,16 @@
                android:orientation="horizontal"
                android:gravity="center"
                android:background="?attr/colorPrimary">
+               <ImageView
+                   android:id="@+id/viewSession"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:padding="10dp"
+                   android:onClick="openBottomSheetSecondaryAction"
+                   android:src="@drawable/round_view_stream_24"/>
                <LinearLayout
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
-                   android:layout_marginStart="50dp"
                    android:layout_weight="1"
                    android:orientation="vertical">
             <!-- text view for displaying question-->
@@ -65,6 +71,7 @@
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
                    android:padding="10dp"
+                   android:onClick="openMenu"
                    android:src="@drawable/round_menu_24"/>
            </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView
