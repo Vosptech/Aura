@@ -38,6 +38,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     // creating variables on below line.
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var currentNumber: String
     private lateinit var queryEdt: EditText
     private lateinit var sendBtn: ImageView
+    private lateinit var passedSessionId: String
     private lateinit var menuBtn : ImageView
     private val tag = "OngoingProcesses"
     private val message = mutableListOf<String>()
@@ -243,11 +245,11 @@ class MainActivity : AppCompatActivity() {
         if (num < 3) {
             val iNum = num + 1
             val pNum = hashMapOf("Num" to iNum)
-            pInfoLocation.set(pNum)
+            pInfoLocation.set(pNum, SetOptions.merge())
             currentNumber = iNum.toString()
         } else {
             val pNum = hashMapOf("Num" to 1)
-            pInfoLocation.set(pNum)
+            pInfoLocation.set(pNum, SetOptions.merge())
             currentNumber = "1"
         }
     }
@@ -263,8 +265,14 @@ class MainActivity : AppCompatActivity() {
     ) {
         Log.e(tag, "Entered chat completion, Current prompt:$currentP")
         queryEdt.setText("")
-        GlobalScope.launch(Dispatchers.IO) {
-            val client = OkHttpClient()
+
+            val client = OkHttpClient.Builder()
+                .connectTimeout(60,TimeUnit.SECONDS)
+                .readTimeout(60,TimeUnit.SECONDS)
+                .writeTimeout(60,TimeUnit.SECONDS)
+                .build()
+
+
 
             val MEDIA_TYPE = "application/json".toMediaType()
 
@@ -290,7 +298,7 @@ class MainActivity : AppCompatActivity() {
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer $OPENAI_API_KEY")
                 .build()
-
+        GlobalScope.launch(Dispatchers.IO) {
             try {
                 val response = client.newCall(request).execute()
                 val responseString = response.body!!.string()
@@ -319,6 +327,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
+                Log.e(tag, e.localizedMessage?.toString() ?: "null")
             }
         }
     }
@@ -461,18 +470,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openSessionBottomSheet() {
-       launchBottomSheet()
+       launchBottomSheet("Start")
     }
 
     fun openBottomSheetSecondaryAction(view: View) {
-       launchBottomSheet()
+       launchBottomSheet("Home")
     }
     fun loadChats(sessionId:String){
+        message.clear()
+        adapter.notifyDataSetChanged()
         pInfoLocation = db.collection(userId).document(sessionId)
         sidLocation = db.collection(userId).document(sessionId).collection("context").document("chatContext")
         getNum()
     }
-    private fun launchBottomSheet (){
+    private fun launchBottomSheet (from:String){
         var recyclerViewBottomSheet:RecyclerView
         val dialog=BottomSheetDialog(this)
          rootView = layoutInflater.inflate(R.layout.fragment_bottom_sheet,null)
@@ -485,6 +496,12 @@ class MainActivity : AppCompatActivity() {
         newChat=rootView.findViewById(R.id.newChatLayout)
         sessionNameOutBox=rootView.findViewById(R.id.sessionNameOutBox)
         recyclerViewBottomSheet=rootView.findViewById(R.id.bottomSheetRecyclerView)
+        if (from=="Start"){
+            closeImageViewBtn.visibility=View.INVISIBLE
+        }
+        closeImageViewBtn.setOnClickListener {
+            dialog.dismiss()
+        }
         sessionNameOutBox.visibility=View.GONE
         sessionNameEditText.visibility=View.GONE
         startChatBtn.visibility=View.GONE
@@ -499,6 +516,7 @@ class MainActivity : AppCompatActivity() {
 
         recyclerViewBottomSheet = rootView.findViewById(R.id.bottomSheetRecyclerView)
         sessionAdapter = SessionAdapter(sessions) { sessionId ->
+            passedSessionId=sessionId
             loadChats(sessionId)
             dialog.dismiss()
             // Handle click event and use the session ID
@@ -506,6 +524,8 @@ class MainActivity : AppCompatActivity() {
         }
         recyclerViewBottomSheet.adapter = sessionAdapter
         recyclerViewBottomSheet.layoutManager = LinearLayoutManager(this)
+        sessions.clear()
+        sessionAdapter.notifyDataSetChanged()
         val sessionRef=db.collection(userId)
         sessionRef.get()
             .addOnSuccessListener { querySnapshot ->
@@ -517,6 +537,7 @@ class MainActivity : AppCompatActivity() {
                     sessions.add(session)
                 }
             }
+                sessions.sortByDescending { it.sessionId }
             sessionAdapter.notifyDataSetChanged()
         }
 
@@ -538,8 +559,11 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(MainActivity(),"Failed to start the Chat due to $it",Toast.LENGTH_LONG).show()
                 }
         }
-        dialog.setCancelable(false)
-
+        if (from=="Start") {
+            dialog.setCancelable(false)
+        }else{
+            dialog.setCancelable(true)
+        }
         // on below line we are setting
         // content view to our view.
         dialog.setContentView(rootView)
@@ -563,9 +587,11 @@ class SessionAdapter(
 
         fun bind(session: Session) {
             sessionNameTextView.text = session.sessionName
-            itemView.setOnClickListener { onItemClick(session.sessionId) }
+            itemView.setOnClickListener { onItemClick(session.sessionId)}
+
         }
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(

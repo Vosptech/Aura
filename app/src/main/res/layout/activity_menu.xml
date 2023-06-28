@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="?attr/colorPrimary"
     android:orientation="vertical"
     android:layout_height="match_parent"
     tools:context=".MenuActivity">
@@ -10,18 +11,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="25dp"
+        android:clickable="true"
         android:padding="20dp"
         android:background="@drawable/highlight_item_bg"
         android:orientation="vertical">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/back_color"
             android:text="Buy Premium"
             android:textSize="20sp"
             app:drawableEndCompat="@drawable/round_open_in_new_24" />
         <TextView
             android:layout_marginTop="30dp"
             android:layout_width="match_parent"
+            android:textColor="@color/back_color"
             android:layout_height="wrap_content"
             android:text="Hey Name get access to features buy premium, get this line from chat gpt"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
@@ -29,6 +33,7 @@
     android:layout_width="match_parent"
     android:layout_marginStart="20dp"
     android:layout_marginTop="20dp"
+    android:clickable="true"
     android:gravity="center"
     android:background="@drawable/menu_item_bg"
     android:layout_marginEnd="20dp"
@@ -92,6 +97,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
         android:gravity="center"
+        android:clickable="true"
         android:background="@drawable/menu_item_bg"
         android:layout_marginEnd="20dp"
         android:padding="15dp"
@@ -106,12 +112,14 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:textSize="17sp"
+            android:layout_marginEnd="30dp"
             android:text="Data and Privacy"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
+        android:clickable="true"
         android:gravity="center"
         android:background="@drawable/menu_item_bg"
         android:layout_marginEnd="20dp"
@@ -126,6 +134,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:layout_marginEnd="30dp"
             android:textSize="17sp"
             android:text="Support"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
@@ -134,6 +143,7 @@
     android:layout_marginStart="20dp"
     android:layout_marginTop="20dp"
     android:gravity="center"
+    android:clickable="true"
     android:background="@drawable/menu_item_bg"
     android:layout_marginEnd="20dp"
     android:padding="15dp"
@@ -147,6 +157,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:layout_marginEnd="30dp"
         android:textSize="17sp"
         android:text="Log out"
         android:onClick="logOut"/>

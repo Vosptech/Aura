@@ -3,7 +3,7 @@
     <style name="Base.Theme.Aura" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <item name="colorPrimary">@color/back_color</item>
-        <item name="colorSecondary">@color/dark_grey</item>
+        <item name="colorSecondary">#1E1E1E</item>
         <item name="colorTertiary">@color/back_color</item>
         <item name="colorAccent">@color/main_color</item>
         <item name="color">@color/white</item>

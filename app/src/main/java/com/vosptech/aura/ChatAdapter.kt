@@ -36,10 +36,13 @@ class ChatAdapter (private val messageList: MutableList<String>) : ListAdapter<S
         private val messageTextView: TextView = itemView.findViewById(R.id.messageTextView)
         private val messageOutBox:LinearLayout = itemView.findViewById(R.id.messageOutbox)
         private val loadingGif:ImageView=itemView.findViewById(R.id.loadingGif)
+        private val outerMostLayout:LinearLayout=itemView.findViewById(R.id.outerMostLayout)
 
         fun bind(message: String) {
-            val num = message[0].toString()
-
+            var num=""
+            if (message!="") {
+                 num = message[0].toString()
+            }
             if (num=="1") {
                 val nMessage=message.removePrefix("1")
                 messageOutBox.gravity = Gravity.END
@@ -62,6 +65,11 @@ class ChatAdapter (private val messageList: MutableList<String>) : ListAdapter<S
                 }else{
                     loadingGif.visibility=View.GONE
                 }
+            }else if(num==""){
+                outerMostLayout.visibility=View.GONE
+                loadingGif.visibility=View.GONE
+                messageTextView.visibility=View.GONE
+                messageOutBox.visibility=View.GONE
             }
 
 
