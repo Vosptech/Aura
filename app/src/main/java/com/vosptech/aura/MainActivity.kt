@@ -56,6 +56,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var newChat: LinearLayoutCompat
     private lateinit var startChatBtn:Button
     private lateinit var userId:String
+    private lateinit var sessionNameTextView: TextView
+    private lateinit var passedSessionName: String
     private lateinit var currentNumber: String
     private lateinit var queryEdt: EditText
     private lateinit var sendBtn: ImageView
@@ -73,6 +75,7 @@ class MainActivity : AppCompatActivity() {
         // initializing variables on below line.
         openSessionBottomSheet()
         queryEdt = findViewById(R.id.idEdtQuery)
+        sessionNameTextView=findViewById(R.id.mainActivitySessionName)
         continueAboveResponsebtn = findViewById(R.id.button)
         currentNumber="1"
         auth=Firebase.auth
@@ -515,8 +518,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         recyclerViewBottomSheet = rootView.findViewById(R.id.bottomSheetRecyclerView)
-        sessionAdapter = SessionAdapter(sessions) { sessionId ->
+        sessionAdapter = SessionAdapter(sessions) { sessionId,sessionName ->
             passedSessionId=sessionId
+            passedSessionName=sessionName
+            sessionNameTextView.text=sessionName
             loadChats(sessionId)
             dialog.dismiss()
             // Handle click event and use the session ID
@@ -576,10 +581,28 @@ class MainActivity : AppCompatActivity() {
         return Calendar.getInstance().timeInMillis
     }
 
+    fun deleteSession(view: View) {
+        //If possible add pop-up saying are you sure you want to delete the session
+        //Also add logic to delete history of chat (in case of premium user
+
+        val docRef=db.collection(userId).document(passedSessionId).collection("context").document("chatContext")
+            docRef.delete()
+                .addOnSuccessListener {
+                    val docref2=db.collection(userId).document(passedSessionId)
+                    docref2.delete().addOnSuccessListener {
+                        launchBottomSheet("Start")
+                    }
+                        .addOnFailureListener {
+                            Toast.makeText(this,"Failed to delete please try again",Toast.LENGTH_LONG).show()
+                        }
+                }
+                .addOnFailureListener { Toast.makeText(this,"Failed to delete please try again",Toast.LENGTH_LONG).show() }
+    }
+
 }
 class SessionAdapter(
     private val sessions: List<Session>,
-    private val onItemClick: (String) -> Unit
+    private val onItemClick: (sessionId: String, sessionName: String) -> Unit
 ) : RecyclerView.Adapter<SessionAdapter.SessionViewHolder>() {
 
     inner class SessionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -587,7 +610,7 @@ class SessionAdapter(
 
         fun bind(session: Session) {
             sessionNameTextView.text = session.sessionName
-            itemView.setOnClickListener { onItemClick(session.sessionId)}
+            itemView.setOnClickListener { onItemClick(session.sessionId,session.sessionName)}
 
         }
     }
